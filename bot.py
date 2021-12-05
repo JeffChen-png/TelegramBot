@@ -4,6 +4,11 @@ from aiogram.utils import executor
 
 from config import TOKEN
 
+import exceptions
+import expenses
+from categories import Categories
+"""from middlewares import AccessMiddleware"""
+
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
@@ -23,6 +28,12 @@ async def process_help_command(message: types.Message):
 async def echo_message(message: types.Message):
     await bot.send_message(message.from_user.id, message.text)
 
+
+@dp.message_handler(commands=['today'])
+async def today_statistics(message: types.Message):
+    """Отправляет сегодняшнюю статистику трат"""
+    answer_message = expenses.get_today_statistics()
+    await message.answer(answer_message)
 
 if __name__ == '__main__':
     executor.start_polling(dp)
