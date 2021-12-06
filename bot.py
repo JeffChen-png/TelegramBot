@@ -7,26 +7,60 @@ from config import TOKEN
 import exceptions
 import expenses
 from categories import Categories
-"""from middlewares import AccessMiddleware"""
+from middlewares import AccessMiddleware
 
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
+dp.middleware.setup(AccessMiddleware(ACCESS_ID))
 
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    await message.reply("Привет!\nНапиши мне что-нибудь!")
+    await message.reply("Привет!\n"
+                        "Я Бот для учёта финансов! Напиши мне свои затраты и добавлю их в базу.\n"
+                        "Например: Добавить расход: 250 такси\n")
 
 
 @dp.message_handler(commands=['help'])
 async def process_help_command(message: types.Message):
-    await message.reply("Напиши мне что-нибудь, и я отпрпавлю этот текст тебе в ответ!")
+    await message.answer("Вот что я умею\n"
+                         "Добавить расход: 250 такси\n"
+                         "Сегодняшняя статистика: /today\n"
+                         "За текущий месяц: /month\n"
+                         "Последние внесённые расходы: /expenses\n"
+                         "Категории трат: /categories")
 
 
+# просмотр расходов
+@dp.message_handler(commands=['expenses'])
+async def process_expenses_command(message: types.Message):
+    last_expenses = expenses.last()
+    if not last_expenses:
+        await message.answer("Расходы ещё не заведены")
+        return
+
+    last_expenses_rows = [
+        f"{expense.amount} руб. на {expense.category_name} — нажми "
+        f"/del{expense.id} для удаления"
+        for expense in last_expenses
+    ]
+    answer_message = "Последние сохранённые траты: ".join(last_expenses_rows)
+    await message.answer(answer_message)
+
+
+# добавление новых расходы
 @dp.message_handler()
-async def echo_message(message: types.Message):
-    await bot.send_message(message.from_user.id, message.text)
+async def add_expenses_command(message: types.Message):
+    try:
+        expense = expenses.add_expense(message.text)
+    except exceptions.NotCorrectMessage as e:
+        await message.answer(str(e))
+        return
+    answer_message = (
+        f"Добавлены траты {expense.amount} руб на {expense.category_name}.\n\n"
+        f"{expenses.get_today_statistics()}")
+    await message.answer(answer_message)
 
 
 @dp.message_handler(commands=['today'])
@@ -34,6 +68,7 @@ async def today_statistics(message: types.Message):
     """Отправляет сегодняшнюю статистику трат"""
     answer_message = expenses.get_today_statistics()
     await message.answer(answer_message)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp)
