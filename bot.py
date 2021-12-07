@@ -63,6 +63,22 @@ async def add_expenses_command(message: types.Message):
     await message.answer(answer_message)
 
 
+# удаление статьи расхода по ее id
+@dp.message_handler(lambda message: message.text.startswith('/del'))
+async def del_expenses_command(message: types.Message):
+    row_id = int(message.text[4:])
+    expenses.delete_expense(row_id)
+    await message.answer("Удалил")
+
+
+# получение категорий расходов
+@dp.message_handler(commands=['categories'])
+async def get_categories_command(message: types.Message):
+    categories = Categories().get_all_categories()
+    answer_message = "Категории трат:\n\n* " + ("\n* ".join([c.name+' ('+", ".join(c.aliases)+')' for c in categories]))
+    await message.answer(answer_message)
+
+
 @dp.message_handler(commands=['today'])
 async def today_statistics(message: types.Message):
     """Отправляет сегодняшнюю статистику трат"""
