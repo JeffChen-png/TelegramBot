@@ -61,6 +61,28 @@ def get_today_statistics() -> str:
             f"За текущий месяц: /month")
 
 
+def get_month_statistics() -> str:
+    """Возвращает строкой статистику расходов за текущий месяц"""
+    now = _get_now_datetime()
+    first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
+    cursor = db.get_cursor()
+    cursor.execute(f"select sum(amount) "
+                   f"from expense where date(created) >= '{first_day_of_month}'")
+    result = cursor.fetchone()
+    if not result[0]:
+        return "В этом месяце ещё нет расходов"
+    all_today_expenses = result[0]
+    cursor.execute(f"select sum(amount) "
+                   f"from expense where date(created) >= '{first_day_of_month}' "
+                   f"and category_codename in (select codename "
+                   f"from category where is_base_expense=true)")
+    result = cursor.fetchone()
+    base_today_expenses = result[0] if result[0] else 0
+    return (f"Расходы в текущем месяце:\n"
+            f"всего — {all_today_expenses} руб.\n"
+            f"базовые — {base_today_expenses} руб. из "
+            f"{now.day * _get_budget_limit()} руб.")
+
 
 def last() -> List[Expense]:
     """Возвращает последние несколько расходов"""
