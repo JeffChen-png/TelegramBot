@@ -86,5 +86,12 @@ async def today_statistics(message: types.Message):
     await message.answer(answer_message)
 
 
+@dp.message_handler(commands=['month'])
+async def month_statistics(message: types.Message):
+    """Отправляет статистику трат текущего месяца"""
+    answer_message = expenses.get_month_statistics()
+    await message.answer(answer_message)
+
+
 if __name__ == '__main__':
     executor.start_polling(dp)
