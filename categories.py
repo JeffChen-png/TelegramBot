@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Работа с категориями расходов"""
 from typing import Dict, List, NamedTuple
 

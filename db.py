@@ -4,6 +4,7 @@ import sqlite3
 
 connec = sqlite3.connect(os.path.join("db", "finance.db"))
 curs = connec.cursor()
+curs.execute('pragma encoding')
 
 def insert(table: str, col_val: Dict):
 	cols = ', '.join(col_val.keys())

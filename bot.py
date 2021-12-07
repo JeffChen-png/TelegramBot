@@ -1,18 +1,21 @@
+# -*- coding: utf-8 -*-
+
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 
 from config import TOKEN
+from config import ACCESS_ID
 
 import exceptions
 import expenses
 from categories import Categories
-from middlewares import AccessMiddleware
+# from middlewares import AccessMiddleware
 
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
-dp.middleware.setup(AccessMiddleware(ACCESS_ID))
+# dp.middleware.setup(AccessMiddleware(ACCESS_ID))
 
 
 @dp.message_handler(commands=['start'])
@@ -49,20 +52,6 @@ async def process_expenses_command(message: types.Message):
     await message.answer(answer_message)
 
 
-# добавление новых расходы
-@dp.message_handler()
-async def add_expenses_command(message: types.Message):
-    try:
-        expense = expenses.add_expense(message.text)
-    except exceptions.NotCorrectMessage as e:
-        await message.answer(str(e))
-        return
-    answer_message = (
-        f"Добавлены траты {expense.amount} руб на {expense.category_name}.\n\n"
-        f"{expenses.get_today_statistics()}")
-    await message.answer(answer_message)
-
-
 # удаление статьи расхода по ее id
 @dp.message_handler(lambda message: message.text.startswith('/del'))
 async def del_expenses_command(message: types.Message):
@@ -90,6 +79,20 @@ async def today_statistics(message: types.Message):
 async def month_statistics(message: types.Message):
     """Отправляет статистику трат текущего месяца"""
     answer_message = expenses.get_month_statistics()
+    await message.answer(answer_message)
+
+
+# добавление новых расходы
+@dp.message_handler()
+async def add_expenses_command(message: types.Message):
+    try:
+        expense = expenses.add_expense(message.text)
+    except exceptions.NotCorrectMessage as e:
+        await message.answer(str(e))
+        return
+    answer_message = (
+        f"Добавлены траты {expense.amount} руб на {expense.category_name}.\n\n"
+        f"{expenses.get_today_statistics()}")
     await message.answer(answer_message)
 
 
