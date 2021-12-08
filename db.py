@@ -25,7 +25,7 @@ def fetchall(table: str, columns: List[str]) -> List[Tuple]:
 	for row in rows:
 		dict_row = {}
 		for index, column in enumerate(columns):
-			dict_row[column] = row[index]
+			dict_row[column] = row[index].encode("utf-8").decode("cp1252")
 		result.append(dict_row)
 	return result
 
